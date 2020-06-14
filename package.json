@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/jfzam/rekognition-dev#readme",
   "dependencies": {
-    "aws-sdk": "^2.696.0"
+    "aws-sdk": "^2.696.0",
+    "dotenv": "^8.2.0"
   }
 }
