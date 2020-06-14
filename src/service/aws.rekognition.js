@@ -1,52 +1,19 @@
 require('dotenv').config()
 const AWS = require('aws-sdk')
-AWS.config.update({ region: 'ap-southeast-1' })
+const fs = require('fs')
 
-const bucket = 'jfzam-dev-rekognition'
-const photo_source = 'frank.png'
-const photo_target = 'jamsfree.jpg'
-
-const config = new AWS.Config({
+AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.AWS_REGION
 })
 
-const client = new AWS.Rekognition()
+const bucket = 'jfzam-dev-rekognition'
 
-exports.compareFace = (req, res) => {
-    const params = {
-        SourceImage: {
-            S3Object: {
-                Bucket: bucket,
-                Name: photo_source
-            },
-        },
-        TargetImage: {
-            S3Object: {
-                Bucket: bucket,
-                Name: photo_target
-            },
-        },
-        SimilarityThreshold: 80
-    }
+const rekognition = new AWS.Rekognition()
+const s3 = new AWS.S3()
 
-    client.compareFaces(params, function (err, response) {
-        if (err) {
-            return res.status(400).send({success:false, err:err});
-            console.log(err, err.stack); // an error occurred
-        } else {
-            return res.send({success:true, data: response});
-            response.FaceMatches.forEach(data => {
-                let position = data.Face.BoundingBox
-                let similarity = data.Similarity
-                console.log(`The face at: ${position.Left}, ${position.Top} matches with ${similarity} % confidence`)
-            })
-        }
-    })
-}
-
-exports.verifyFace = (id, image, res) => {
+exports.verifyFace = (name, image, res) => {
     const params = {
         SourceImage: {
             Bytes: image
@@ -54,33 +21,62 @@ exports.verifyFace = (id, image, res) => {
         TargetImage: {
             S3Object: {
                 Bucket: bucket,
-                Name: id
+                Name: name + '.jpg'
             }
         },
-        SimilarityThreshold: 95
+        SimilarityThreshold: 90
     }
 
-    client.compareFaces(params, function (err, response) {
+    rekognition.compareFaces(params, (err, data) => {
         if (err) {
-            return res.status(400).send({success:false, err:err});
-            console.log(err, err.stack); // an error occurred
+            return res.status(400).send({ success: false, err: err });
         } else {
-            if(response.FaceMatches[0]) {
+            if (data.FaceMatches[0]) {
                 return res.send({
-                    success:true, 
+                    success: true,
                     verify: {
                         isMatch: true,
-                        similarity: response.FaceMatches[0].Similarity
-                    }
+                        similarity: data.FaceMatches[0].Similarity
+                    },
+                    data
                 });
             } else {
                 return res.send({
-                    success:true, 
+                    success: true,
                     verify: {
                         isMatch: false
-                    }
+                    },
+                    data
                 });
             }
         }
     })
+}
+
+
+exports.uploadUser = (name, file, res) => {
+    console.log('preparing to upload...')
+    const putParams = {
+        Bucket: bucket,
+        Key: name + '.jpg',
+        Body: file
+    }
+
+    s3.putObject(putParams, (err, data) => {
+        if (err) {
+          console.log('Could nor upload the file. Error :',err)
+          return res.send({ 
+              success: false,
+             data
+            });
+        } 
+        else{
+          //fs.unlink(path);// Deleting the file from uploads folder(Optional).Do Whatever you prefer.
+          console.log('Successfully uploaded the file')
+          return res.send({ 
+              success: true,
+              data
+            });
+        }
+      })
 }

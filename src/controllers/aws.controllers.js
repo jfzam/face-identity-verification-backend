@@ -1,17 +1,33 @@
-const aws = require('../service/aws.rekognition.js');
-
-exports.compare = (req, res) => {
-    aws.compareFace(req, res)
-}
+const aws = require('../service/aws.rekognition.js')
 
 exports.verify = (req, res, next) => {
-    if (!req.file) {
-        res.status(400).send('No file uploaded.');
+    if(req.headers.token != process.env.TOKEN) {
+        res.status(403).send({err: 'Invalid token.'})
         return;
     }
+    if (!req.file) {
+        res.status(400).send({err: 'No file uploaded.'})
+        return;
+    } else if (!req.params.name) {
+        res.status(400).send({err: 'No name found.'})
+        return;
+    }
+    
+    aws.verifyFace(req.params.name, req.file.buffer, res)
+}
 
-    const id = req.params.id
-    const image = req.file.buffer
-    console.log(req)
-    aws.verifyFace(id, image, res)
+exports.upload = (req, res, next) => {
+    console.log(req.file)
+    if(req.headers.token != process.env.TOKEN) {
+        res.status(403).send({err: 'Invalid token.'})
+        return;
+    }
+    if (!req.file) {
+        res.status(400).send({err: 'No file uploaded.'})
+        return;
+    } else if (!req.params.name) {
+        res.status(400).send({err: 'No name found.'})
+        return;
+    }
+    aws.uploadUser(req.params.name, req.file.buffer, res)
 }
