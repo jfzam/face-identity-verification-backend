@@ -9,9 +9,9 @@ const photo_target  = 'jamsfree.jpg'
 
 
 const config = new AWS.Config({
-  accessKeyId: 'AKIA3J4GWA3WXXG6FC5V', //process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: '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', //process.env.AWS_SECRET_ACCESS_KEY,
-  region: "ap-southeast-1" //process.env.AWS_REGION
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
 })
 
 
