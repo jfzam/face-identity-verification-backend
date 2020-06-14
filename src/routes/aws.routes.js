@@ -19,4 +19,7 @@ router.post('/verify/:name', upload.single('verify-image'), awsController.verify
 // upload image
 router.post('/upload/:name', upload.single('upload-image'), awsController.upload)
 
+// extract text
+router.post('/ocr', upload.single('document-image'), awsController.extract)
+
 module.exports = router

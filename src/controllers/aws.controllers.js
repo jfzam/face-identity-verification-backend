@@ -17,7 +17,6 @@ exports.verify = (req, res, next) => {
 }
 
 exports.upload = (req, res, next) => {
-    console.log(req.file)
     if(req.headers.token != process.env.TOKEN) {
         res.status(403).send({err: 'Invalid token.'})
         return;
@@ -30,4 +29,17 @@ exports.upload = (req, res, next) => {
         return;
     }
     aws.uploadUser(req.params.name, req.file.buffer, res)
+}
+
+exports.extract = (req, res, next) => {
+    if(req.headers.token != process.env.TOKEN) {
+        res.status(403).send({err: 'Invalid token.'})
+        return;
+    }
+    if (!req.file) {
+        res.status(400).send({err: 'No file uploaded.'})
+        return;
+    }
+
+    aws.extractText(req.file.buffer, res)
 }
