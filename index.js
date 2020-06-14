@@ -14,10 +14,6 @@ const config = new AWS.Config({
   region: process.env.AWS_REGION
 })
 
-console.log(process.env.AWS_ACCESS_KEY_ID)
-console.log(process.env.AWS_SECRET_ACCESS_KEY)
-console.log(process.env.AWS_REGION)
-
 const client = new AWS.Rekognition()
 
 const params = {
@@ -44,6 +40,6 @@ client.compareFaces(params, function(err, response) {
       let position   = data.Face.BoundingBox
       let similarity = data.Similarity
       console.log(`The face at: ${position.Left}, ${position.Top} matches with ${similarity} % confidence`)
-    }) // for response.faceDetails
-  } // if
+    })
+  }
 })
