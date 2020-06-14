@@ -1,0 +1,25 @@
+{
+  "name": "rekognition-dev",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jfzam/rekognition-dev.git"
+  },
+  "keywords": [
+    "aws"
+  ],
+  "author": "jfzam",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfzam/rekognition-dev/issues"
+  },
+  "homepage": "https://github.com/jfzam/rekognition-dev#readme",
+  "dependencies": {
+    "aws-sdk": "^2.696.0"
+  }
+}
