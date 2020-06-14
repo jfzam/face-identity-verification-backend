@@ -24,7 +24,7 @@ exports.verifyFace = (name, image, res) => {
                 Name: name + '.jpg'
             }
         },
-        SimilarityThreshold: 90
+        SimilarityThreshold: 80
     }
 
     rekognition.compareFaces(params, (err, data) => {
@@ -71,7 +71,6 @@ exports.uploadUser = (name, file, res) => {
             });
         } 
         else{
-          //fs.unlink(path);// Deleting the file from uploads folder(Optional).Do Whatever you prefer.
           console.log('Successfully uploaded the file')
           return res.send({ 
               success: true,
