@@ -15,6 +15,43 @@ const rekognition = new AWS.Rekognition()
 const s3 = new AWS.S3()
 const textract = new AWS.Textract()
 
+exports.compareFace = (image1, image2, res) => {
+    const params = {
+        SourceImage: {
+            Bytes: image1
+        },
+        TargetImage: {
+            Bytes: image2
+        },
+        SimilarityThreshold: 80
+    }
+
+    rekognition.compareFaces(params, (err, data) => {
+        if (err) {
+            return res.status(400).send({ success: false, err: err })
+        } else {
+            if (data.FaceMatches[0]) {
+                return res.send({
+                    success: true,
+                    compare: {
+                        isMatch: true,
+                        similarity: data.FaceMatches[0].Similarity
+                    },
+                    data
+                })
+            } else {
+                return res.send({
+                    success: true,
+                    compare: {
+                        isMatch: false
+                    },
+                    data
+                })
+            }
+        }
+    })
+}
+
 exports.verifyFace = (name, image, res) => {
     const params = {
         SourceImage: {
@@ -23,7 +60,7 @@ exports.verifyFace = (name, image, res) => {
         TargetImage: {
             S3Object: {
                 Bucket: bucket,
-                Name: name + '.jpg'
+                Name: name
             }
         },
         SimilarityThreshold: 80
@@ -56,25 +93,24 @@ exports.verifyFace = (name, image, res) => {
 }
 
 exports.uploadUser = (name, file, res) => {
-    console.log('preparing to upload...')
     const putParams = {
         Bucket: bucket,
-        Key: name + '.jpg',
+        Key: name,
         Body: file
     }
 
     s3.putObject(putParams, (err, data) => {
         if (err) {
-            console.log('Could nor upload the file. Error :', err)
             return res.send({
                 success: false,
+                err,
                 data
             })
         }
         else {
-            console.log('Successfully uploaded the file')
             return res.send({
                 success: true,
+                fileName: name,
                 data
             })
         }
@@ -91,8 +127,7 @@ exports.extractText = (file, res) => {
 
     textract.analyzeDocument(params, (err, data) => {
         if (err) {
-            console.log(err)
-            return res.send({ success: false })
+            return res.send({ success: false, err })
         } else {
             const getText = (result, blocksMap) => {
                 let text = ""

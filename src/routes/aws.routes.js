@@ -10,11 +10,13 @@ const storage = multer.diskStorage({
 })
 
 //const upload = multer({ storage: storage })
-
 const upload = multer()
 
+//compare images
+router.post('/compare', upload.array('compare-image', 2), awsController.compare)
+
 // verify image
-router.post('/verify/:name', upload.single('verify-image'), awsController.verify)
+router.post('/verify', upload.single('verify-image'), awsController.verify)
 
 // upload image
 router.post('/upload/:name', upload.single('upload-image'), awsController.upload)
