@@ -1,6 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const awsRoutes = require('./src/routes/aws.routes')
+const route = require('./src/routes/router')
 
 // create express app
 const app = express()
@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 })
 
 // using as middleware
-app.use('/api/', awsRoutes)
+app.use('/api/', route)
 
 // listen for requests
 app.listen(port, () => {

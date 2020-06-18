@@ -9,97 +9,13 @@ AWS.config.update({
     region: process.env.AWS_REGION
 })
 
-const bucket = 'jfzam-dev-rekognition'
-
 const rekognition = new AWS.Rekognition()
 const s3 = new AWS.S3()
 const textract = new AWS.Textract()
 
-exports.compareFace = (image1, image2, res) => {
-    const params = {
-        SourceImage: {
-            Bytes: image1
-        },
-        TargetImage: {
-            Bytes: image2
-        },
-        SimilarityThreshold: 80
-    }
 
-    rekognition.compareFaces(params, (err, data) => {
-        if (err) {
-            return res.status(400).send({ success: false, err: err })
-        } else {
-            if (data.FaceMatches[0]) {
-                return res.send({
-                    success: true,
-                    compare: {
-                        isMatch: true,
-                        similarity: data.FaceMatches[0].Similarity
-                    },
-                    data
-                })
-            } else {
-                return res.send({
-                    success: true,
-                    compare: {
-                        isMatch: false
-                    },
-                    data
-                })
-            }
-        }
-    })
-}
-
-exports.verifyFace = (name, image, res) => {
-    const params = {
-        SourceImage: {
-            Bytes: image
-        },
-        TargetImage: {
-            S3Object: {
-                Bucket: bucket,
-                Name: name
-            }
-        },
-        SimilarityThreshold: 80
-    }
-
-    rekognition.compareFaces(params, (err, data) => {
-        if (err) {
-            return res.status(400).send({ success: false, err: err })
-        } else {
-            if (data.FaceMatches[0]) {
-                return res.send({
-                    success: true,
-                    verify: {
-                        isMatch: true,
-                        similarity: data.FaceMatches[0].Similarity
-                    },
-                    data
-                })
-            } else {
-                return res.send({
-                    success: true,
-                    verify: {
-                        isMatch: false
-                    },
-                    data
-                })
-            }
-        }
-    })
-}
-
-exports.uploadUser = (name, file, res) => {
-    const putParams = {
-        Bucket: bucket,
-        Key: name,
-        Body: file
-    }
-
-    s3.putObject(putParams, (err, data) => {
+exports.putObject = (params, res) => {
+    s3.putObject(params, (err, data) => {
         if (err) {
             return res.send({
                 success: false,
@@ -110,21 +26,41 @@ exports.uploadUser = (name, file, res) => {
         else {
             return res.send({
                 success: true,
-                fileName: name,
+                fileName: params.Key,
                 data
             })
         }
     })
 }
 
-exports.extractText = (file, res) => {
-    const params = {
-        Document: {
-            Bytes: file
-        },
-        FeatureTypes: ["FORMS"]
-    }
+exports.compareFaces = (params, res) => {
+    rekognition.compareFaces(params, (err, data) => {
+        if (err) {
+            return res.status(400).send({ success: false, err })
+        } else {
+            if (data.FaceMatches[0]) {
+                return res.send({
+                    success: true,
+                    result: {
+                        isMatch: true,
+                        similarity: data.FaceMatches[0].Similarity
+                    },
+                    data
+                })
+            } else {
+                return res.send({
+                    success: true,
+                    result: {
+                        isMatch: false
+                    },
+                    data
+                })
+            }
+        }
+    })
+}
 
+exports.analyzeDocument = (params, res) => {
     textract.analyzeDocument(params, (err, data) => {
         if (err) {
             return res.send({ success: false, err })
@@ -149,7 +85,6 @@ exports.extractText = (file, res) => {
                         }
                     })
                 }
-
                 return text.trim()
             }
 
@@ -213,7 +148,8 @@ exports.extractText = (file, res) => {
             
                 return res.send({
                     success: true,
-                    data: keyValues
+                    result: keyValues,
+                    data
                 })
               }
 
